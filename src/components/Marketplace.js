@@ -4,6 +4,7 @@ import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { GetIpfsUrlFromPinata } from "../utils";
+import {ethers} from 'ethers'
 
 export default function Marketplace() {
 const sampleData = [
@@ -35,22 +36,31 @@ const sampleData = [
         "address":"0xe81Bf5A757C4f7F82a2F23b1e59bE45c33c5b13",
     },
 ];
-const [data, updateData] = useState([]);
+const [data, updateData] = useState(JSON.parse(localStorage.getItem('localNfts')));
 const [dataFetched, updateFetched] = useState(false);
 
 async function getAllNFTs() {
-    const ethers = require("ethers");
+    console.log("Rakesh");
+    // const ethers = require("ethers");
     //After adding your Hardhat network to your metamask, this code will get providers and signers
     const provider = new ethers.providers.Web3Provider(window.ethereum);
+    console.log("ididwgd", provider);
+
     const signer = provider.getSigner();
+    console.log("ABCDEF", signer);
     //Pull the deployed contract instance
     let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
     //create an NFT Token
+    console.log('&*&*&*&*&*' , contract)
     let transaction = await contract.getAllNFTs()
+    // console.log('===-=--=-' , contract.address())
+
+    console.log('transactions' , transaction)
 
     //Fetch all the details of every NFT from the contract and display
     const items = await Promise.all(transaction.map(async i => {
         var tokenURI = await contract.tokenURI(i.tokenId);
+        console.log('()))()' , tokenURI)
         console.log("getting this tokenUri", tokenURI);
         tokenURI = GetIpfsUrlFromPinata(tokenURI);
         let meta = await axios.get(tokenURI);
@@ -68,6 +78,7 @@ async function getAllNFTs() {
         }
         return item;
     }))
+    localStorage.setItem('localNfts' , JSON.stringify(items));
     console.log('value ===== ' , items)
 
     updateFetched(true);
@@ -75,7 +86,7 @@ async function getAllNFTs() {
 }
 
 useEffect(() => {
-    if(!dataFetched)
+    // if(!dataFetched)
     console.log('get nft called')
         getAllNFTs();
 }, [])

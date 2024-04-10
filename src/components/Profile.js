@@ -18,7 +18,6 @@ export default function Profile () {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         const addr = await signer.getAddress();
-
         //Pull the deployed contract instance
         let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
 
@@ -54,6 +53,8 @@ export default function Profile () {
         updateAddress(addr);
         updateTotalPrice(sumPrice.toPrecision(3));
     }
+
+    console.log("add:-", address)
 
     const params = useParams();
     const tokenId = params.tokenId;
