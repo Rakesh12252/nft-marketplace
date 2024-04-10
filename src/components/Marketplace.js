@@ -4,109 +4,61 @@ import MarketplaceJSON from "../Marketplace.json";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { GetIpfsUrlFromPinata } from "../utils";
-import {ethers} from 'ethers'
+import { ethers } from 'ethers';
 
 export default function Marketplace() {
-const sampleData = [
-    {
-        "name": "NFT#1",
-        "description": "First NFT",
-        "website":"http://axieinfinity.io",
-        "image":"https://ipfs.filebase.io/ipfs/QmXF2kEYtrG9qqupqMmAnJAq9HqxG6SzsFPGfPJffQ5bvn",
-        "price":"0.03ETH",
-        "currentlySelling":"True",
-        "address":"0xe81Bf5A757CB4f7F82a2F23b1e59bE45c33c5b13",
-    },
-    {
-        "name": "NFT#2",
-        "description": "Second NFT",
-        "website":"http://axieinfinity.io",
-        "image":"https://ipfs.filebase.io/ipfs/QmTLorL5aixJoxDa5saoMFg9jcXeNsd1o1j1mFWwzr7hCx",
-        "price":"0.03ETH",
-        "currentlySelling":"True",
-        "address":"0xe81Bf5A757C4f7F82a2F23b1e59bE45c33c5b13",
-    },
-    {
-        "name": "NFT#3",
-        "description": "Third NFT",
-        "website":"http://axieinfinity.io",
-        "image":"https://ipfs.filebase.io/ipfs/QmR88Z5NrFb5b9i5ZchaWKqef2LvzZbXvcUm8jes2LVbvA",
-        "price":"0.03ETH",
-        "currentlySelling":"True",
-        "address":"0xe81Bf5A757C4f7F82a2F23b1e59bE45c33c5b13",
-    },
-];
-const [data, updateData] = useState(JSON.parse(localStorage.getItem('localNfts')));
-const [dataFetched, updateFetched] = useState(false);
+    const [data, updateData] = useState([]);
+    const [dataFetched, updateFetched] = useState(false);
 
-async function getAllNFTs() {
-    console.log("Rakesh");
-    // const ethers = require("ethers");
-    //After adding your Hardhat network to your metamask, this code will get providers and signers
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    console.log("ididwgd", provider);
-
-    const signer = provider.getSigner();
-    console.log("ABCDEF", signer);
-    //Pull the deployed contract instance
-    let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer)
-    //create an NFT Token
-    console.log('&*&*&*&*&*' , contract)
-    let transaction = await contract.getAllNFTs()
-    // console.log('===-=--=-' , contract.address())
-
-    console.log('transactions' , transaction)
-
-    //Fetch all the details of every NFT from the contract and display
-    const items = await Promise.all(transaction.map(async i => {
-        var tokenURI = await contract.tokenURI(i.tokenId);
-        console.log('()))()' , tokenURI)
-        console.log("getting this tokenUri", tokenURI);
-        tokenURI = GetIpfsUrlFromPinata(tokenURI);
-        let meta = await axios.get(tokenURI);
-        meta = meta.data;
-
-        let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
-        let item = {
-            price,
-            tokenId: i.tokenId.toNumber(),
-            seller: i.seller,
-            owner: i.owner,
-            image: meta.image,
-            name: meta.name,
-            description: meta.description,
+    async function getAllNFTs() {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            let contract = new ethers.Contract(MarketplaceJSON.address, MarketplaceJSON.abi, signer);
+            let transaction = await contract.getAllNFTs();
+            const items = await Promise.all(transaction.map(async i => {
+                var tokenURI = await contract.tokenURI(i.tokenId);
+                tokenURI = GetIpfsUrlFromPinata(tokenURI);
+                let meta = await axios.get(tokenURI);
+                meta = meta.data;
+                let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
+                let item = {
+                    price,
+                    tokenId: i.tokenId.toNumber(),
+                    seller: i.seller,
+                    owner: i.owner,
+                    image: meta.image,
+                    name: meta.name,
+                    description: meta.description,
+                }
+                return item;
+            }));
+            localStorage.setItem('localNfts', JSON.stringify(items));
+            updateFetched(true);
+            updateData(items);
+        } catch (error) {
+            console.error("Error fetching NFTs:", error);
         }
-        return item;
-    }))
-    localStorage.setItem('localNfts' , JSON.stringify(items));
-    console.log('value ===== ' , items)
+    }
 
-    updateFetched(true);
-    updateData(items);
-}
-
-useEffect(() => {
-    // if(!dataFetched)
-    console.log('get nft called')
+    useEffect(() => {
+        console.log('get nft called');
         getAllNFTs();
-}, [])
+    }, []);
 
-
-
-return (
-    <div>
-        <Navbar/>
-        <div className="flex flex-col place-items-center mt-20">
-            <div className="md:text-xl font-bold text-white">
-                Top NFTs
-            </div>
-            <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
-                {data.map((value, index) => {
-                    return <NFTTile data={value} key={index}></NFTTile>;
-                })}
-            </div>
-        </div>            
-    </div>
-);
-
+    return (
+        <div>
+            <Navbar/>
+            <div className="flex flex-col place-items-center mt-20">
+                <div className="md:text-xl font-bold text-white">
+                    Top NFTs
+                </div>
+                <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
+                    {data.map((value, index) => {
+                        return <NFTTile data={value} key={index}></NFTTile>;
+                    })}
+                </div>
+            </div>            
+        </div>
+    );
 }
