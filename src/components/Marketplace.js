@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 export default function Marketplace() {
     const [data, updateData] = useState([]);
     const [dataFetched, updateFetched] = useState(false);
+    const[walletConnect,setWalletConnect]= useState()
 
     async function getAllNFTs() {
         try {
@@ -47,13 +48,13 @@ export default function Marketplace() {
     }, []);
 
     return (
-        <div>
+        <div className="min-h-screen bg-gray-900">
             <Navbar/>
-            <div className="flex flex-col place-items-center mt-20">
-                <div className="md:text-xl font-bold text-white">
+            <div className="container mx-auto px-4 py-12">
+                <div className="text-center text-white text-2xl font-bold mb-8">
                     Top NFTs
                 </div>
-                <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {data.map((value, index) => {
                         return <NFTTile data={value} key={index}></NFTTile>;
                     })}

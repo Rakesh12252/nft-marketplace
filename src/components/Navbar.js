@@ -88,7 +88,7 @@ async function connectWebsite() {
             <Link to="/">
             {/* <img src={fullLogo} alt="" width={120} height={120} className="inline-block -mt-2"/> */}
             <div className='inline-block font-bold text-xl ml-2'>
-              NFT MARKETPLACE
+              Agnus AI
             </div>
             </Link>
           </li>
